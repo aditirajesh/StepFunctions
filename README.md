@@ -1,4 +1,5 @@
-## Step Functions: an overview
+# Step Functions: an overview
+
 - With the help of step functions, you can create workflows (or **state machines**) which are essentially a series of steps. Each step is called a **state**, and resembles a unit of work. For example, a **task state** is a unit of work that another AWS service (such as lambda/ec2) performs. 
 - The instances of running workflows performing tasks are called **executions**.
 - Each step can pass data to subsequent steps using variables and state output.
