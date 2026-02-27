@@ -81,7 +81,7 @@
 ```
 
 ### Case 2: Palindrome Fail
-![Screenshot](falseinvoke.png)
+![Screenshot](image/falseinvoke.png)
 **Input: **
 ```
 {
