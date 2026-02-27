@@ -7,10 +7,10 @@
   a) **Request and response (default)** - AWS service called and step function waits till http response to progress to the next state.
   b) **Run a job (.sync)** - waiting for the job to complete.
   c) **Wait for a callback from task token (.waitForTaskToken)** - the step function waits till the task token is returned.
-![Screenshot](stepfunction.png)
+![Screenshot](images/stepfunction.png)
 
 **Example use-cases of workflows:**
-![Screenshot](workflows.png)
+![Screenshot](images/workflows.png)
 
 
 ## Lambda: an overview
@@ -36,7 +36,7 @@
 ### Step 3: Create the step function 
 - Navigate to AWS Step Functions 
 - Map out the design in this manner:
-  ![Screenshot](stepfunctionnewdesign.png)
+  ![Screenshot](images/stepfunctionnewdesign.png)
 - Enter the aws lambda arn, along with the function name. The same boolean function is passed for TrueLambdaInvoke and FalseLambdaInvoke.
 - Ensure the output concatenates the boolean result as well as the input string. This ensures that the input passed in the first state persists all the way to the end. 
 - Create a new state (Pass state) that handles any error in input. 
@@ -61,7 +61,7 @@
 
 ## Outputs:
 ### Case 1: Palindrome Pass
-![Screenshot][trueinvoke.png]
+![Screenshot](images/trueinvoke.png)
 **Input: **
 ```
 {
@@ -102,7 +102,7 @@
 ```
 
 ### Case 3: Input error 
-![Screenshot](inputerror.png)
+![Screenshot](images/inputerror.png)
 **Input:**
 ```
 {
