@@ -1,0 +1,109 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Invoke Palindrome Function",
+  "States": {
+    "Invoke Palindrome Function": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% { 'string': $states.input.string, 'is_palindrome': $states.result.Payload.is_palindrome } %}",
+      "Arguments": {
+        "FunctionName": "arn:aws:lambda:us-east-1:[awsnumber]:function:CheckForPalindrome",
+        "Payload": "{% $states.input %}"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "ValueError"
+          ],
+          "Next": "HandleInputError"
+        }
+      ],
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "Choice"
+    },
+    "HandleInputError": {
+      "Type": "Pass",
+      "Output": {
+        "statusCode": 400,
+        "error": "Invalid input",
+        "message": "Missing or invalid 'string' field in input"
+      },
+      "End": true
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "TrueLambdaInvoke",
+          "Condition": "{% $states.input.is_palindrome = true %}"
+        },
+        {
+          "Next": "FalseLambdaInvoke",
+          "Condition": "{% $states.input.is_palindrome = false %}"
+        }
+      ]
+    },
+    "TrueLambdaInvoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "arn:aws:lambda:us-east-1:[awsnumber]:function:BooleanLambdaHandler",
+        "Payload": "{% $states.input %}"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "End": true
+    },
+    "FalseLambdaInvoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "arn:aws:lambda:us-east-1:[awsnumber]:function:BooleanLambdaHandler",
+        "Payload": "{% $states.input %}"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "End": true
+    }
+  },
+  "QueryLanguage": "JSONata"
+}
