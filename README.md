@@ -8,10 +8,45 @@
   a) **Request and response (default)** - AWS service called and step function waits till http response to progress to the next state.
   b) **Run a job (.sync)** - waiting for the job to complete.
   c) **Wait for a callback from task token (.waitForTaskToken)** - the step function waits till the task token is returned.
+  - **Variables:** with workflow variables, you can store data (output/input of a state) to be used much later. Without it, values would have to be passed through multiple state before reaching the state that actually needs it.
+- Variables are stored in the **execution context level** - which is a separate memory space that exists for the entire lifetime of the state machine execution. They are completely independent of the input and output. 
+- To reference the variable, prepend it with a dollar sign (example, $productName)
+
+  ```
+  "Assign": { "productName": "product1", "count" : 42, "available" : true }
+  ```
+  ![Screenshot](images/variables.png)
+  
+  
+- There is a single reserved variable called **states**
+```
+  $states = {
+  "input":       // Original input to the state
+  "result":      // API or sub-workflow's result (if successful)
+  "errorOutput": // Error Output (only available in a Catch)
+  "context":     // Context object
+   }
+```
+  - On state entry, function assigns the input that has been passed to $states.input. This $states.input will always reference the original states. $states.context gives additional information about the workflow (such as start time, task token, initial workflow input). ***Variables cannot be used in the ResultPath***
+
 ![Screenshot](images/stepfunction.png)
 
 **Example use-cases of workflows:**
 ![Screenshot](images/workflows.png)
+
+#### States: Different Types
+- **Task** — Invokes an AWS service or resource to do actual work (Lambda, DynamoDB, SNS, etc.)
+- **Choice** — Branches execution based on conditions, like an if/else. No `End` or `Next` at the top level — each choice branch defines its own `Next`.
+- **Pass** — Does no actual work. Just passes input to output, optionally reshaping it. Useful for:
+	- Injecting static values
+	- Reshaping/transforming data without invoking anything
+	- Terminal states that just return a final message (like your `PrintResult`)
+
+- **Wait** — Pauses execution for a specified amount of time or until a timestamp before moving to the next state.
+- **Succeed** — Terminates execution successfully. Similar to Pass but semantically signals a successful end — no output transformation.
+- **Fail** — Terminates execution as a failure with an optional error and cause message.
+- **Map** — Iterates over an array and runs the same set of states for each item in parallel.
+- **Parallel** — Runs multiple independent branches of states simultaneously and waits for all to complete before moving on.
 
 
 ## Lambda: an overview
@@ -119,7 +154,44 @@
   "message": "Missing or invalid 'string' field in input"
 }
 ```
+### Using variables, arguments and pass states:
+![Screenshot](images/new_var_state.pn)
 
+**Variable definition:**
+```
+  "Assign": {
+        "originalString": "{% $states.input.string %}",
+        "reverseString": ""
+      },
+```
+
+**Pass state:**
+```
+"PrintResult": {
+      "Type": "Pass",
+      "Output": {
+        "message": "{% $states.input.body.message %}",
+        "originalString": "{% $originalString %}",
+        "reverseString": "{% $reverseString %}"
+      },
+      "End": true
+   }
+```
+
+**ReverseString variable assignment:**
+- TrueLambdaInvoke:
+```
+"Assign": {
+        "reverseString": "{% $originalString %}"
+}
+```
+
+- FalseLambdaInvoke:
+  ```
+  "Assign": {
+        "reverseString": "{% $join($reverse($split($originalString, '')), '') %}"
+    }
+  ```
 
 
 
