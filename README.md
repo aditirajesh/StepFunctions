@@ -155,7 +155,7 @@
 }
 ```
 ### Using variables, arguments and pass states:
-![Screenshot](images/new_var_state.pn)
+![Screenshot](images/new_var_state.png)
 
 **Variable definition:**
 ```
